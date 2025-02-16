@@ -1,0 +1,761 @@
+\documentclass[a4paper,12pt,twoside]{article}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{ulem}
+
+\geometry{
+  a4paper, 
+  left=3cm,
+  right=3cm,
+  top=2cm,
+  bottom=2cm
+}
+
+% Farben für Code
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{keyword}{RGB}{0,0,180}
+\definecolor{comment}{RGB}{0,128,0}
+\definecolor{string}{RGB}{163,21,21}
+\definecolor{directive}{RGB}{128,0,128}
+
+% NASM Syntax Highlighting
+\lstdefinelanguage{NASM}{
+  morekeywords={mov, add, sub, mul, div, jmp, jz, jnz, call, ret, push, pop, int, xor, and, or, cmp, lea},
+  morekeywords=[2]{section, global, extern, db, dw, dd, dq, resb, resw, resd, resq},
+  morekeywords=[3]{eax, ebx, ecx, edx, esi, edi, esp, ebp, ax, bx, cx, dx, al, ah, bl, bh, cl, ch, dl, dh},
+  sensitive=true,
+  morecomment=[l]{;}, % Single-line comments
+  morestring=[b]",    % Strings in double quotes
+  keywordstyle=\color{keyword}\bfseries,
+  keywordstyle=[2]\color{directive}\bfseries,
+  keywordstyle=[3]\color{blue}\bfseries,
+  commentstyle=\color{comment},
+  stringstyle=\color{string}
+}
+
+\lstset{
+  language=NASM,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\tiny,
+  breaklines=true,
+  frame=single,
+  showstringspaces=false,
+  tabsize=4
+}
+
+% Titelseite
+\title{Ich lerne Assembly x86 NASM}
+\author{Tobi}
+\date{\today}
+
+% Kopf und Fußzeilen
+\pagestyle{fancy}
+\fancyhf{} % Kopf- und Fußzeilen leeren
+\fancyfoot[C]{\thepage} % Seitenzahl zentriert in der Fußzeile
+\fancyhead[LE, RO]{\title}
+\fancyhead[LO, RE]{\author}
+
+
+\begin{document}
+
+% Titelseite
+\maketitle
+\thispagestyle{empty} % Keine Kopf-/Fußzeile auf der Titelseite
+\newpage
+
+% Inhaltsverzeichnis
+\tableofcontents
+\newpage
+
+% Beispielkapitel
+\section{Ausführen}
+\subsection{Linux}
+\verb|nasm -f elf32 hello.asm -o hello.o| 
+\verb|ld -m elf_i386 -o hello hello.o|
+\verb|./hello|
+\section{Debugger}
+\subsection{Linux}
+\verb|nasm -f elf32 -g -F dwarf hello.asm -o hello.o|
+\verb|ld -m elf_i386 -o hello hello.o|
+\verb|gdb ./hello|
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill
+  \> \verb|break _start| \> setzt einen Breakpoint \\ 
+  \> \verb|run| \> führt das Programm im Debugger aus \\ 
+  \> \verb|stepi| \> führt einen einzelne Assembler-Instruktion aus \\ 
+  \> \verb|nexti| \> nächste Instruktion ohne Eintritt in Funktionen \\ 
+  \> \verb|info registers| \> zeigt den Status aller Register an \\ 
+  \> \verb|x/10b $esp| \> zeigt den Speicherinhalt ab Stackpointer an \\ 
+  \> \> Stackpointer \verb|esp|; Befehl zum Untersuchen \verb|x| \\ 
+  \> \> zeigt 10 Bytes an \verb|10b| \\ 
+  \> \verb|continue| \> setzt das Programm fort bis zum nächsten Breakpoint \\ 
+  \> \verb|quit| \> beendet den Debugger \\
+\end{tabbing}
+\section{Struktur}
+\subsection{Hauptprogramm}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text     ; definiert einen Teil des Programms, Name ist .text
+global _start     ; definiert das Programm als global
+
+_start:
+  ; Hauptprogramm beginnt hier 
+  call sub_program   ; Aufruf des Unterprogramms 
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\subsection{Unterprogramm}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+sub_programm:
+  ; Unterprogramm beginnt hier
+  ret   ; Rueckkerh ins Hauptprogramm
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\section{Syntax}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> \verb|;Kommentar| \> erzeugt ein Kommentar \\ 
+  \> \verb|[ ]| \> Runde Klammern werden kaum verwendet \\ 
+  \> \verb|{ }| \> Geschweifte Klammern werden kaum verwendet \\ 
+  \> \verb|,| \> Trennzeichen in Befehlen \\
+  \> \verb|.| \> Direktiven, definiert Anweisungen oder Daten \\ 
+  \> \verb|.bunga| \> lokales Label, nur inerhalb eines Prozesses \\ 
+  \> \verb|_bunga| \> Label, vorallem für C-kompatible Codes \\ 
+  \> \verb|' '| \> String \\
+\end{tabbing}
+\section{Ein und Ausgabe}
+\subsection{Ausgabe}
+\section{Register}
+\subsection{Accumulator}
+Wird oft als allgemeines Zweckregister verwendet, hat historisch aber eine \\ 
+besondere Bedeutung. \\ 
+Definition: eax, ax oder al \\ 
+Bei Multiplikation und Division wird der Accumulator als erster Operant gerundet. 
+Wird auch häufig für I/O verwendet \\ 
+\subsection{Base Pointer}
+Basisregister für Speicheradressierungen oder Index-Register. \\ 
+Definition ebx, bx oder bl \\
+\subsection{64-Bit-Register}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> rax \> Accumulator \\ 
+  \> rbx \> Base Pointer \\ 
+  \> rcx \> Counter \\ 
+  \> rdx \> Data \\ 
+  \> rsi \> Source Index \\ 
+  \> rdi \> Destination Index \\ 
+  \> rbp \> Base Pointer fuer den Stack Frame \\ 
+  \> rsp \> Stack Pointer \\
+\end{tabbing}
+\subsection{32-Bit-Register}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> eax \> Accumulator \\ 
+  \> ebx \> Base Pointer \\ 
+  \> ecx \> Counter \\ 
+  \> edx \> Data \\ 
+  \> esi \> Source Index \\ 
+  \> edi \> Destination Index \\ 
+  \> ebp \> Base Pointer fuer den Stack Frame \\ 
+  \> esp \> Stack Pointer \\
+\end{tabbing}
+\subsection{16-Bit-Register}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> ax \> Accumulator \\ 
+  \> bx \> Base Pointer \\ 
+  \> cx \> Counter \\ 
+  \> dx \> Data \\ 
+\end{tabbing}
+\subsection{8-Bit-Register}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> ah \> oberes Byte von ax \\ 
+  \> al \> unteres Byte von ax \\ 
+  \> bh \> oberes Byte von bx \\ 
+  \> bl \> unteres Byte von bx \\ 
+  \> ch \> oberes Byte von cx \\ 
+  \> cl \> unteres Byte von cx \\ 
+  \> dh \> oberes Byte von dx \\ 
+  \> dl \> unteres Byte von dx \\ 
+\end{tabbing}
+\section{Variablen}
+\verb|section .data     ; Daten die einen Anfangswert haben| 
+\verb|section .bss      ; erstellt Platzhalter fuer Variablen| 
+\section{Datentypen}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> db \> define byte, 8bit \\ 
+  \> dw \> define word, 16bit \\ 
+  \> dd \> define double word, 32bit \\ 
+  \> dq \> define quadword, 64bit \\ 
+  \> dt \> define ten bytes, 80bit \\ 
+  \> ddq \> define double quadword, 128bit \\ 
+  \> do \> define octword 16Bytes \\ 
+  \> dy \> define yword 32Bytes \\ 
+  \> dz \> define zword 64Bytes \\ 
+  \> times \> Array \\
+  \> array\_bunga times 10 db 0 \> definiert ein Array mit 10 byte \\  
+  \> bunga db 'Hallo' 0 \> defniert eine 8bit String \\
+  \> resb \> reserve byte \\ 
+  \> resw \> reserve word \\ 
+  \> resd \> reserve double word \\ 
+  \> resq \> reserve quadword \\ 
+  \> rest \> reserve ten bytes \\ 
+  \> resdq \> reserve double quadword \\ 
+  \> reso \> reserve octword \\ 
+  \> resy \> reserve yword \\ 
+  \> resz \> reserve zword \\ 
+\end{tabbing}
+\textbf{Struktur}
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+  \begin{lstlisting}[language=NASM]
+person:
+  name    db 'Horst', 0 
+  age     dw 30 
+  height  dd 175
+  \end{lstlisting}
+\end{minipage}
+\end{center}
+\textbf{Fließkommazahlen}
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+  \begin{lstlisting}[language=NASM]
+; Kommazahlen muessen hexadezimal dargestellt werden 
+; IEEE-754
+; 1.0 in Single-Precision
+single_float dd 0x3f800000 
+
+; 1.0 in Double-Precision 
+double_float dq 0x3ff0000000000000
+  \end{lstlisting}
+\end{minipage}
+\end{center}
+\section{Datentransfer}
+\begin{tabbing}
+  \= \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> mov \> kopiert von Quelle nach Ziel \\ 
+  \> xchg \> tauscht zwei Werte \\ 
+  \> push \> speichert Wert auf Stack \\ 
+  \> pop \> holt Wert von Stack \\ 
+  \> enter \> erstellt einen Stackframe \\ 
+  \> leave \> beendet das Stackframe \\
+  \> pusha \> speichert alle allgemeinen Register auf dem Stack \\ 
+  \> popa \> holt alle allgemeinen Register von dem Stack \\ 
+  \> pushf \> speichert Flags auf dem Stack \\ 
+  \> popf \> holt Flags vom Stack \\ 
+  \> lahf \> holt die unteren 8bit von FLAGS in AH \\ 
+  \> sahf \> speichert AH zurueck in FLAGS \\ 
+  \> in \> liest einen I/O Port \\ 
+  \> out \> schreibt auf einen I/O Port \\ 
+  \> lea \> laedt die Adresse eines Speichers \\ 
+  \> lds \> laedt Registerpaar mit Zeiger und Segment \\ 
+  \> les \> laedt Registerpaar mit Zeiger und Segment \\ 
+  \> lfs \> laedt Registerpaar mit Zeiger und Segment \\ 
+  \> lgs \> laedt Registerpaar mit Zeiger und Segment \\ 
+  \> lss \> laedt Registerpaar mit Zeiger und Segment \\ 
+  \> movX \> X kann s, b, w oder d sein \\ 
+  \> \> kopiert eine Zeichenfolge \\
+  \> cmpX \> X kann s, b, w oder d sein \\
+  \> \> Vergleicht Zeichenfolge \\
+  \> scaX \> X kann s, b, w oder d sein \\ 
+  \> \> sucht nach Zeichenfolge \\ 
+  \> stoX \> X kann s, b, w oder d sein \\ 
+  \> \> speichert Zeichenfolge \\
+\end{tabbing}
+\section{Schleifen}
+\subsection{Sprünge}
+\subsubsection{Unbedingte Sprünge}
+\hspace{2mm} jmp \hspace{50mm} springt zu einem Label \\
+\subsubsection{Bedingte Sprünge}
+Verwendet die Flags:
+\hspace{2mm} CF \hspace{50mm} Carry Flag (für unsigned Vergleiche) \\ 
+\hspace{2mm} ZF \hspace{50mm} Zero Flag \\ 
+\hspace{2mm} SF \hspace{50mm} Sign Flag (für signed Vergleiche) \\ 
+\hspace{2mm} OF \hspace{50mm} Overflow Flag (für signed Vergleiche) \\
+\hspace{2mm} CX \hspace{50mm} Register mit 16bit \\ 
+\hspace{2mm} ECX \hspace{50mm} Register mit 32bit \\ 
+\hspace{2mm} RCX \hspace{50mm} Register mit 64bit \\
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> je \> jump when equal (ZF=1, nach \texttt{cmp}) \\ 
+  \> jz \> jump when zero (ZF=1, nach Berechnung, synonym zu je) \\ 
+  \> jne \> jump when not equal (ZF=0) \\ 
+  \> jnz \> jump when not zero (ZF=0, synonym zu jne) \\ 
+  \> jg \> jump when greater (signed, ZF=0 \& SF=OF) \\ 
+  \> jnle \> jump when not less or equal (signed, ZF=0 \& SF=OF, synonym zu jg) \\ 
+  \> jge \> jump when greater or equal (signed, SF=OF) \\ 
+  \> jnl \> jump when not less (signed, SF=OF, synonym zu jge) \\ 
+  \> jl \> jump when less (signed, SF$\neq$OF) \\ 
+  \> jnge \> jump when not greater or equal (signed, SF$\neq$OF, synonym zu jl) \\ 
+  \> jle \> jump when less or equal (signed, ZF=1 OR SF$\neq$OF) \\ 
+  \> jng \> jump when not greater (signed, ZF=1 OR SF$\neq$OF, synonym zu jle) \\ 
+  \> ja \> jump if above (CF=0 und ZF=0, unsigned greater) \\ 
+  \> jae \> jump if above or equal (CF=0, unsigned greater or equal) \\ 
+  \> jb \> jump if below (CF=1, unsigned less) \\ 
+  \> jbe \> jump if below or equal (CF=1 or ZF=1, unsigned less or equal) \\
+  \> jcxz \> jump if CX is Zero (CX = 0) \\
+  \> jecxz \> jump if ECX is Zero (ECX = 0) \\
+  \> jrcxz \> jump if RCX is Zero (RCX = 0) \\
+\end{tabbing}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+; Sprung wenn 10 > 5 (unsigned)
+mov eax, 10
+mov ebx, 5
+cmp eax, ebx   ; 10 - 5 entspricht CF=0, ZF=0
+ja groesser    ; Springt, weil 10 > 5
+
+mov eax, 1     ; Wird uebersprungen
+
+groesser:
+mov eax, 2     ; eax = 2 (weil gesprungen)
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\subsection{loop}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text
+global _start
+
+_start:
+    mov ecx, 5  ; Initialisiere ecx mit 5 Wiederholungen
+loop_start:
+    ; Schleife
+    ; Hier koennte man z.B. etwas ausgeben oder eine Operation durchfuehren
+    loop loop_start  ; Springe zurueck zu loop_start, solange ecx > 0
+
+    ; Schleifenende
+    ; Programm beenden
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\hspace{2mm} loopz \hspace{50mm} loop while zero \\ 
+\hspace{2mm} loope \hspace{50mm} loop while equal \\ 
+\hspace{2mm} loopnz \hspace{50mm} loop while not zero \\ 
+\hspace{2mm} loopne \hspace{50mm} loop while not equal \\ 
+\subsection{While}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text
+global _start
+
+_start:
+    mov ecx, 0  ; Initialisiere ecx als Zaehler
+
+while_loop:
+    ; Bedingung ueberpruefen
+    cmp ecx, 5  ; Vergleiche ecx mit 5
+    jge end_while  ; Springe zu end_while, wenn ecx >= 5
+
+    ; Schleifenkoerper
+    inc ecx  ; Erhoehe ecx um 1
+    ; Hier koennten weitere Operationen ausgefuehrt werden
+    jmp while_loop  ; Zueck zum Bedingungscheck
+
+end_while:
+    ; Schleifenende, Programm fortsetzen
+
+    ; Programm beenden
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\subsection{Do-While}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text
+global _start
+
+_start:
+    mov ecx, 0  ; Initialisiere ecx als Zaehler
+
+do_while_loop:
+    ; Schleifenkoerper
+    inc ecx  ; Erhoehe ecx um 1
+    ; Hier koennten weitere Operationen ausgefuehrt werden
+
+    ; Bedingung ueberpruefen (am Ende der Schleife)
+    cmp ecx, 5
+    jl do_while_loop  ; Springe zurueck, wenn ecx < 5
+
+    ; Schleifenende
+    ; Programm fortsetzen
+
+    ; Programm beenden
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\subsection{For}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text
+global _start
+
+_start:
+    mov ecx, 0  ; Startwert
+    mov edx, 5  ; Endwert
+
+for_loop:
+    ; Schleifenkoerper
+    ; Hier koennte man mit ecx als Index arbeiten
+    inc ecx  ; Erhoehe ecx (Index) um 1
+
+    ; Bedingung ueberpruefen
+    cmp ecx, edx  ; Vergleiche ecx mit Endwert
+    jle for_loop  ; Springe zurueck, wenn ecx <= edx
+
+    ; Schleifenende
+    ; Programm fortsetzen
+
+    ; Programm beenden
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\section{Funktionen}
+\subsection{call}
+Unterprogramme haben ein label, das label wird dann mit call aufgerufen. \\ 
+Sie enden meist mit dem ret Befehl. 
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .text
+global _start
+
+_start:
+    ; Hauptprogramm
+    call my_function  ; Rufe das Unterprogramm auf
+    ; Weitere Logik nach dem Aufruf
+
+    ; Beende das Programm
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+
+my_function:
+    ; Code des Unterprogramms
+    ; Zum Beispiel, setze ein Register
+    mov eax, 42
+    ; Rueckkehr ins Hauptprogramm
+    ret
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+Es können auch Parameter und Rückgabewerte definiert werden 
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+; Beispiel fuer Parameteruebergabe ueber Register
+mov eax, 10
+mov ebx, 20
+call add_two_numbers
+; Ergebnis ist nun in eax
+
+add_two_numbers:
+    add eax, ebx
+    ret
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\subsection{Interrupt}
+\subsubsection{Sustemaufrufe Linux}
+\hspace{2mm} int 0x80 \hspace{50mm} 32bit Systemaufruf \\ 
+\> syscall \> 64bit Systemaufruf \\
+\subsubsection{Software-Interrupt}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+
+      
+    \end{lstlisting}
+    
+  \end{minipage}
+  
+\end{center}
+\section{Multiprozess}
+\section{Mathematik}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> add \> $eax = eax + ebx$ \\ 
+  \> sub \> $eax = eax - ebx$ \\ 
+  \> mul bl \> Ergebnis in AX 8bit \\ 
+  \> mul bx \> Ergebnis in DX:AX 16bit \\ 
+  \> mul ebx \> Ergebnis in EDX:EAX \\ 
+  \> imul bl \> Ergebnis in AX 8bit mit Vorzeichenbehandlung \\ 
+  \> imul bx \> Ergebnis in DX:AX 16bit mit Vorzeichenbehandlung \\ 
+  \> imul ebx \> Ergebnis in EDX:EAX 32bit mit Vorzeichenbehandlung \\
+  \> div bl \> Quotient in AL, Rest in AH 8bit \\ 
+  \> div bx \> Quotient in AX, Rest in DX 16bit \\ 
+  \> div ebx \> Quotient in EAX, Rest in EDX 32bit \\
+  \> idiv bl \> Quotient in AL, Rest in AH 8bit mit Vorzeichenbehandlung \\ 
+  \> idiv bx \> Quotient in AX, Rest in DX 16bit mit Vorzeichenbehandlung \\ 
+  \> idiv ebx \> Quotient in EAX, Rest in EDX 32bit mit Vorzeichenbehandlung \\
+  \> inc eax \> Inkrementiert um 1 \\ 
+  \> dec eax \> Dekrementiert um 1 \\
+  \> neg eax \> negiert das Vorzeichen \\ 
+  \> adc \> addiert mit Carry \\ 
+  \> sbb \> subtrahiert mit Borrow \\
+\end{tabbing}
+\subsection{Arbeiten mit Fließkommazahlen}
+\subsubsection{x87 FPU}
+\textbf{x87 Floating-Point Unit}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill
+  \> fld \> laedt einen Wert auf den FPU-Stack \\ 
+  \> fld1 \> laedt die Konstante 1.0 \\ 
+  \> fldz \> laedt die Konstaten 0.0 \\ 
+  \> fldpi \> laedt die Konstante $\pi$ \\ 
+  \> fst \> speichert den Wert von ST(0) ohne Stack Modifikation \\ 
+  \> fstp \> speichert den Wert von ST(0) und poppt ihn vom Stack \\
+  \> fadd \> $ST(0) = ST(0) + ST(1)$ \\
+  \> faddp \> $ST(1) = ST(0) + ST(1)$ poppt ST(0) \\ 
+  \> fsub \> $ST(0) = ST(0) - ST(1)$ \\ 
+  \> fsubp \> $ST(1) = ST(1) - ST(0)$ poppt ST(0) \\ 
+  \> fsubr \> $ST(0) = ST(1) - ST(0)$ \\ 
+  \> fsubrp \> $ST(1) = ST(0) - ST(1)$ poppt ST(0) \\ 
+  \> fmul \> $ST(1) = ST(0) * ST(1)$ \\ 
+  \> fmulp \>$ST(1) = ST(0) * ST(1)$ poppt ST(0) \\
+  \> fdiv \> $ST(0) = ST(0) / ST(1)$ \\
+  \> fdivp \> $ST(1) = ST(1) / ST(0)$ poppt ST(0) \\ 
+  \> fdivr \> $ST(0) = ST(1) / ST(0)$ \\ 
+  \> fdivrp \> $ST(1) = ST(0) / ST(1)$ poppt ST(0)\\ 
+  \> fsqrt \> Quadratwurzel von ST(0) \\ 
+  \> fabs \> setzt ST(0) auf den absolut Wert \\ 
+  \> fchs \> wechselst das Vorzeichen von ST(0) \\ 
+  \> frndint \> rundet ST(0) auf Ganzzahl \\ 
+  \> fcom \> vergleicht ST(0) mit ST(1) \\ 
+  \> fcomp \> vergleicht ST(0) mit ST(1) und poppt \\ 
+  \> fcompp \> vergleicht ST(0) mit ST(1) und poppt 2x \\
+  \> fild \> laedt einen Integer auf den FPU-Stack \\ 
+  \> fistp \> Speichert ST(0) als Integer und poppt ST(0) \\ 
+  \> \> es wurd normal gerundet \\ 
+  \> fldcw \> setzt den Rundungsmodus auf abrunden \\ 
+  \> frndint \> schneidet die Zahlen nach dem Komma ab \\ 
+  \> fxch \> tauscht ST(0) mit ST(n) \\ 
+  \> fstsw \> speichert den Status-Wort der FPU im Register oder Speicher \\ 
+  \> fincstp \> erhoeht den Stack-Pointer \\ 
+  \> fdecstp \> verringert den Stack-Pointer \\ 
+\end{tabbing}
+\subsubsection{SEE}
+\textbf{Streaming SIMD Extensions}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill
+  \> movss xmm0, [Variablen] \>  laedt die Variable in ein 32bit Register \\ 
+  \> movsd xmm0, [Variablen] \> laedt die Variable in ein 64bit Register \\ 
+  \> addss \> addiert scalar 32bit \\ 
+  \> addps \> addiert packed 32bit \\ 
+  \> subss \> subtrahiert scalar 32bit \\ 
+  \> subps \> subtrahiert packed 32bit \\ 
+  \> mulss \> multipliziert scalar 32bit \\ 
+  \> mulps \> multipliziert packed 32bit \\ 
+  \> divss \> dividiert scalar 32bit \\ 
+  \> divps \> dividiert packed 32bit \\ 
+  \> sqrtss \> Quadratwurzel scalar 32bit \\ 
+  \> sqrtps \> Quadratwurzel packed 32bit \\ 
+  \> minss \> minimum scalar 32bit \\ 
+  \> minps \> minimum packed 32bit \\ 
+  \> maxss \> maximum scalar 32bit \\ 
+  \> maxps \> maximum packed 32bit \\ 
+  \> addsd \> addiert scalar 64bit \\ 
+  \> addpd \> addiert packed 64bit \\ 
+  \> subsd \> subtrahiert scalar 64bit \\ 
+  \> subpd \> subtrahiert packed 64bit \\ 
+  \> mulsd \> multipliziert scalar 64bit \\ 
+  \> mulpd \> multipliziert packed 64bit \\ 
+  \> divsd \> dividiert scalar 64bit \\ 
+  \> divpd \> dividiert packed 64bit \\ 
+  \> sqrtsd \> Quadratwurzel scalar 64bit \\ 
+  \> sqrtpd \> Quadratwurzel packed 64bit \\ 
+  \> minsd \> minimum scalar 64bit \\ 
+  \> minpd \> minimum packed 64bit \\ 
+  \> maxsd \> maximum scalar 64bit \\ 
+  \> maxpd \> maximum packed 64bit \\ 
+  \> scalar \> einzelnes Element eines Registers \\ 
+  \> packed \> mehrere Elemente eines Register \\ 
+\end{tabbing}
+\subsubsection{AVX}
+\textbf{Advanced Vector Extensions}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill
+  \> vmovss xmm0, [Variablen] \>  laedt die Variable in ein 32bit Register \\ 
+  \> vmovsd xmm0, [Variablen] \> laedt die Variable in ein 64bit Register \\ 
+  \> vaddss \> addiert scalar 32bit \\ 
+  \> vaddps \> addiert packed 32bit \\ 
+  \> vsubss \> subtrahiert scalar 32bit \\ 
+  \> vsubps \> subtrahiert packed 32bit \\ 
+  \> vmulss \> multipliziert scalar 32bit \\ 
+  \> vmulps \> multipliziert packed 32bit \\ 
+  \> vdivss \> dividiert scalar 32bit \\ 
+  \> vdivps \> dividiert packed 32bit \\ 
+  \> vsqrtss \> Quadratwurzel scalar 32bit \\ 
+  \> vsqrtps \> Quadratwurzel packed 32bit \\ 
+  \> vminss \> minimum scalar 32bit \\ 
+  \> vminps \> minimum packed 32bit \\ 
+  \> vmaxss \> maximum scalar 32bit \\ 
+  \> vmaxps \> maximum packed 32bit \\ 
+  \> vaddsd \> addiert scalar 64bit \\ 
+  \> vaddpd \> addiert packed 64bit \\ 
+  \> vsubsd \> subtrahiert scalar 64bit \\ 
+  \> vsubpd \> subtrahiert packed 64bit \\ 
+  \> vmulsd \> multipliziert scalar 64bit \\ 
+  \> vmulpd \> multipliziert packed 64bit \\ 
+  \> vdivsd \> dividiert scalar 64bit \\ 
+  \> vdivpd \> dividiert packed 64bit \\ 
+  \> vsqrtsd \> Quadratwurzel scalar 64bit \\ 
+  \> vsqrtpd \> Quadratwurzel packed 64bit \\ 
+  \> vminsd \> minimum scalar 64bit \\ 
+  \> vminpd \> minimum packed 64bit \\ 
+  \> vmaxsd \> maximum scalar 64bit \\ 
+  \> vmaxpd \> maximum packed 64bit \\ 
+  \> scalar \> einzelnes Element eines Registers \\ 
+  \> packed \> mehrere Elemente eines Register \\ 
+\end{tabbing}
+\textbf{Beispiel}
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+  \begin{lstlisting}[language=NASM]
+section .data
+  num1 dd 0x401E6666      ; 2.45 als Hex
+  num2 dd 0x42355C29      ; 45.34 als Hex
+
+section .text
+  global _start
+
+_start:
+  movss xmm0, [num1]      ; laedt num1 ins Register xmm0
+  movss xmm1, [num2]      ; laedt num2 ins Register xmm1
+
+  addss xmm0, xmm1        ; num1 = num1 + num2
+
+  movss [result], xmm0    ; speichert Ergebnis in xmm0 
+
+  ;Beendet das Programm 
+  mov eax, 1              ; SYS_exit 
+  xor ebx, ebx            ; exit code 0 
+  int 0x80               ; System call fuer Exit
+  \end{lstlisting}
+\end{minipage}
+\end{center}
+\section{Logische und Bit-Manipulationsbefehle}
+\begin{tabbing}
+  \hspace{2mm} \= \hspace{50mm} \= \kill 
+  \> and \> Bitweise UND \\ 
+  \> or \> Bitweise ODER \\ 
+  \> xor \> Bitweise Exklusiv-ODER \\ 
+  \> not \> Bitweise Negation \\ 
+  \> shl \> links schieben, ohne Vorzeichen  \\ 
+  \> sal \> links schieben, mit Vorzeichen \\
+  \> shr \> rechts schieben, ohne Vorzeichen \\ 
+  \> sar \> rechts schieben, mit Vorzeichen \\
+  \> rol \> rotiert nach links \\ 
+  \> ror \> rotiert nach rechts \\ 
+  \> rcl \> rotiert nach links mit Carry \\ 
+  \> rcr \> rotiert nach rechts mit Carry \\ 
+  \> bt \> testet ein Bit \\ 
+  \> bts \> setzt ein Bit \\ 
+  \> btr \> loescht ein Bit \\ 
+  \> btc \> komplementiert ein Bit \\ 
+\end{tabbing}
+\section{Pakete}
+\section{Hello World!}
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=NASM]
+section .data
+message db 'Hello, World!', 0xa ; '0xa' ist der ASCII-Code fuer Zeilenumbruch
+length equ $ - message           ; Laenge der Nachricht
+
+section .text
+    global _start
+
+_start:
+    ; Systemaufruf fuer write (sys_write)
+    mov eax, 4          ; Systemaufrufnummer 4 fuer write
+    mov ebx, 1          ; Dateideskriptor 1 ist stdout
+    mov ecx, message    ; Adresse der Nachricht
+    mov edx, length     ; Laenge der Nachricht
+    int 0x80            ; Unterbrechung, um den Systemaufruf auszufuehren
+
+    ; Systemaufruf fuer exit (sys_exit)
+    mov eax, 1          ; Systemaufrufnummer 1 fuer exit
+    xor ebx, ebx        ; Rueckgabewert 0 (ohne Fehler)
+    int 0x80            ; Unterbrechung, um den Systemaufruf auszufuehren	  
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
+\section{Installation}
+\subsection{Kompiler}
+\verb|sudo pacman -S nasm|
+\subsection{Debugger}
+\verb|sudo pacman -S gdb|
+\end{document}
+
+\begin{center}
+  \begin{minipage}{1.0\textwidth}
+    \begin{lstlisting}[language=Assembler]
+section .data
+message db 'Hello, World!', 0xa ; '0xa' ist der ASCII-Code für Zeilenumbruch
+length equ $ - message           ; Länge der Nachricht
+
+section .text
+    global _start
+
+_start:
+    ; Systemaufruf für write (sys_write)
+    mov eax, 4          ; Systemaufrufnummer 4 für write
+    mov ebx, 1          ; Dateideskriptor 1 ist stdout
+    mov ecx, message    ; Adresse der Nachricht
+    mov edx, length     ; Länge der Nachricht
+    int 0x80            ; Unterbrechung, um den Systemaufruf auszuführen
+
+    ; Systemaufruf für exit (sys_exit)
+    mov eax, 1          ; Systemaufrufnummer 1 für exit
+    xor ebx, ebx        ; Rückgabewert 0 (ohne Fehler)
+    int 0x80            ; Unterbrechung, um den Systemaufruf auszuführen	  \end{lstlisting}
+  \end{minipage}
+\end{center}
+
+\begin{tabbing}
+  \hspace{5mm} \= \hspace{50mm} \= \kill
+  \> \>
+\end{tabbing}
+
+\begin{itemize}
+  \item
+  
+\end{itemize}
+
+\begin{enumerate}
+  \item
+  
+\end{enumerate}
